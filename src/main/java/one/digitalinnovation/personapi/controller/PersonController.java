@@ -35,7 +35,7 @@ public class PersonController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<PersonDTO>> findByAll(Pageable pageable ){
+    public ResponseEntity<Page<PersonDTO>> findAll(Pageable pageable ){
         return ResponseEntity.ok(personService.findAll(pageable));
     }
 

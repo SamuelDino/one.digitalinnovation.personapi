@@ -13,9 +13,9 @@ public class AddressDTO {
 
     private Long id;
 
-    private int number;
-
     private String street;
+
+    private int number;
 
     private String city;
 

@@ -7,6 +7,8 @@ import one.digitalinnovation.personapi.exception.ResourceNotFoundException;
 import one.digitalinnovation.personapi.mapper.PersonMapper;
 import one.digitalinnovation.personapi.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,21 +47,26 @@ public class PersonService {
 
     @Transactional
     public PersonDTO delete(Long id){
-        Optional<Person> personOpt = personRepository.findById(id);
-        if (personRepository.existsById(id)){
-            personRepository.delete(personOpt.get());
+        try{
+            Optional<Person> personOpt = personRepository.findById(id);
+            personRepository.deleteById(id);
+            return PersonMapper.INSTANCE.toDto(personOpt.get());
         }
-        return PersonMapper.INSTANCE.toDto(personOpt.orElseThrow(()-> new ResourceNotFoundException("ID não encontrado !")));
+        catch(EmptyResultDataAccessException e) {
+            throw new ResourceNotFoundException("ID não encontrado !");
+        }
     }
 
     @Transactional
-    public PersonDTO update(PersonDTO personDTO, Long id){
-        if (personRepository.existsById(id)){
+    public PersonDTO update(PersonDTO personDTO, Long id) {
+        try {
             personDTO.setId(id);
-            personRepository.save(PersonMapper.INSTANCE.toEntity(personDTO));
+            Person personSaved = personRepository.save(PersonMapper.INSTANCE.toEntity(personDTO));
+            return PersonMapper.INSTANCE.toDto(personSaved);
         }
-        Optional<Person> personOpt = personRepository.findById(id);
-        return PersonMapper.INSTANCE.toDto(personOpt.orElseThrow(()-> new ResourceNotFoundException("ID não encontrado !")));
+        catch(DataIntegrityViolationException e) {
+            throw new ResourceNotFoundException("ID não encontrado !");
+        }
     }
 
 }
